@@ -1,82 +1,80 @@
-# Fiap-Azure-CLI
+## Laboratório: Criando uma VM na Azure com Apache utilizando Azure CLI
 
-Laboratório: Criando uma VM na Azure com Apache utilizando Azure CLI 
+### Objetivo
 
-  
+Neste laboratório, você aprenderá a usar a Azure CLI para criar uma Máquina Virtual (VM) na Azure, instalar o servidor Apache e liberar a porta necessária para conexão com a internet.
 
-Objetivo 
+### Pré-requisitos
 
-  
+1. Conta na Microsoft Azure.
+2. Azure CLI instalada. Se não estiver instalada, siga as instruções [aqui](https://docs.microsoft.com/pt-br/cli/azure/install-azure-cli).
 
-Neste laboratório, você aprenderá a usar a Azure CLI para criar uma Máquina Virtual (VM) na Azure, instalar o servidor Apache e liberar a porta necessária para conexão com a internet. 
+### Passo a Passo
 
-  
+#### 1. Login na Azure
 
-Pré-requisitos 
+Primeiro, faça login na sua conta Azure usando o comando:
 
-  
+```sh
+az login
+```
 
-1. Conta na Microsoft Azure. 
+#### 2. Criação de um Grupo de Recursos
 
-2. Azure CLI instalada. Se não estiver instalada, siga as instruções aqui. 
+Crie um grupo de recursos para organizar os recursos que você criará. Substitua `<ResourceGroupName>` e `<Location>` pelos valores desejados:
 
- 
+```sh
+az group create --name <ResourceGroupName> --location <Location>
+```
 
-Primeiros passos: 
+#### 3. Criação da Máquina Virtual
 
-  
+Crie uma nova VM. Substitua `<ResourceGroupName>`, `<VMName>`, `<Username>`, e `<Password>` pelos valores desejados:
 
-1. Login na Azure 
+```sh
+az vm create --resource-group <ResourceGroupName> --name <VMName> --image UbuntuLTS --admin-username <Username> --admin-password <Password> --size Standard_B1s --authentication-type password
+```
 
-Primeiro, faça login na sua conta Azure usando o comando: 
+#### 4. Abrir a Porta 80 (HTTP)
 
-az login 
-  
+Para permitir tráfego HTTP (porta 80) para a VM, execute o seguinte comando:
 
-2. Criação de um Grupo de Recursos 
+```sh
+az vm open-port --port 80 --resource-group <ResourceGroupName> --name <VMName>
+```
 
-Crie um grupo de recursos para organizar os recursos que você criará. Substitua `<ResourceGroupName>` e `<Location>` pelos valores desejados: 
+#### 5. Conectar-se à VM
 
-az group create --name <ResourceGroupName> --location <Location> 
+Obtenha o endereço IP público da VM:
 
+```sh
+az vm show --resource-group <ResourceGroupName> --name <VMName> --show-details --query [publicIps] --output tsv
+```
 
-3. Criação da Máquina Virtual   
+Use o endereço IP obtido para se conectar à VM via SSH:
 
-Crie uma nova VM. Substitua `<ResourceGroupName>`, `<VMName>`, `<Username>`, e `<Password>` pelos valores desejados: 
+```sh
+ssh <Username>@<PublicIP>
+```
 
-az vm create --resource-group <ResourceGroupName> --name <VMName> --image UbuntuLTS --admin-username <Username> --admin-password <Password> --size Standard_B1s --authentication-type password 
+#### 6. Instalação do Apache
 
-4. Abrir a Porta 80 (HTTP) 
+Após conectar-se à VM, execute os seguintes comandos para instalar o Apache:
 
-Para permitir tráfego HTTP (porta 80) para a VM, execute o seguinte comando: 
+```sh
+sudo apt update
+sudo apt install -y apache2
+sudo systemctl start apache2
+sudo systemctl enable apache2
+```
 
-az vm open-port --port 80 --resource-group <ResourceGroupName> --name <VMName> 
+#### 7. Verificar a Instalação
 
-
-5. Conectar-se à VM 
-
-Obtenha o endereço IP público da VM: 
-
-az vm show --resource-group <ResourceGroupName> --name <VMName> --show-details --query [publicIps] --output tsv 
-
-Use o endereço IP obtido para se conectar à VM via SSH: 
-
-ssh Username@PublicIP
-
-6. Instalação do Apache
-
-Após conectar-se à VM, execute os seguintes comandos para instalar o Apache:   
-
-sudo apt update 
-sudo apt install -y apache2 
-sudo systemctl start apache2 
-sudo systemctl enable apache2 
-  
-7. Verificar a Instalação 
-
-No navegador da web, digite o endereço IP público da VM. Você deve ver a página padrão do Apache confirmando que ele está instalado e funcionando. 
+No navegador da web, digite o endereço IP público da VM. Você deve ver a página padrão do Apache confirmando que ele está instalado e funcionando.
 
 
 Antes de finalizar o Laboratório, iremos executar o comando para remover tudo que foi criado, evitando o consumo de recursos e disperdicios: 
- 
-az group delete --name <ResourceGroupName> --yes --no-wait 
+
+```sh
+az group delete --name <ResourceGroupName> --yes --no-wait
+```
